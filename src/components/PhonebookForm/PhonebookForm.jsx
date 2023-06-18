@@ -7,22 +7,31 @@ import {
   StyledForm,
   StyledFormTitle,
 } from './PhonebookForm.styled';
-import { nanoid } from 'nanoid';
 import { useDispatch, useSelector } from 'react-redux';
-import { addContact } from 'redux/contactsSlice';
-import { getContacts } from 'redux/selectors';
+import { selectContacts } from 'redux/selectors';
+import { addContact } from 'redux/operations';
 
 export const PhonebookForm = ({ title }) => {
-  const contacts = useSelector(getContacts);
+  const contacts = useSelector(selectContacts);
   const dispatch = useDispatch();
 
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
-  const [id, setId] = useState('');
 
-  const addContacts = contact => {
-    const normalizedContact = contact.name.toLowerCase().trim();
-    const normalizedNumber = contact.number.replaceAll(' ', '');
+  const handleChange = e => {
+    const { value, name } = e.target;
+    if (name === 'name') setName(value);
+    if (name === 'number') setNumber(value);
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    const newContact = {
+      name: name,
+      phone: number,
+    };
+    const normalizedContact = newContact.name.toLowerCase().trim();
+    const normalizedNumber = newContact.phone.replaceAll(' ', '');
 
     if (
       contacts.some(el => el.name.toLowerCase().trim() === normalizedContact)
@@ -32,26 +41,13 @@ export const PhonebookForm = ({ title }) => {
     }
 
     if (
-      contacts.some(el => el.number.replaceAll(' ', '') === normalizedNumber)
+      contacts.some(el => el.phone.replaceAll(' ', '') === normalizedNumber)
     ) {
       alert(`The contact number ${normalizedNumber} is already exists!`);
       return;
     }
 
-    dispatch(addContact(contact));
-  };
-
-  const handleChange = e => {
-    const { value, name } = e.target;
-    if (name === 'name') setName(value);
-    if (name === 'number') setNumber(value);
-    setId(nanoid());
-  };
-
-  const handleSubmit = e => {
-    e.preventDefault();
-
-    addContacts({ name, number, id });
+    dispatch(addContact(newContact));
 
     reset();
   };
@@ -59,7 +55,6 @@ export const PhonebookForm = ({ title }) => {
   const reset = () => {
     setName('');
     setNumber('');
-    setId('');
   };
 
   return (
